@@ -3,10 +3,19 @@ Fetch Tibber Pulse data from the Tibber Pulse API web socket and place it in you
 
 Based on oysteoh's [tibber-pypulse-ws](https://github.com/oysteoh/tibber-pypulse-ws).
 
-## How to build
-```
-docker build -t turbosnute/tibberpulse-influxdb:latest -t turbosnute/tibberpulse-influxdb:v1.0.
-```
+## How to obtain Tibber Token and home ID
+### Tibber Token
+- Go to https://developer.tibber.com/ and Sign in.
+- Genrerate a new token.
+
+### Home ID
+- After generating your token go to https://developer.tibber.com/explorer
+- Make sure you are signed in.
+- Click "Load Personal Token"
+- From the dropdown to the right choose "Real time subscriptions"
+- You can now see your homeId in the GraphiQL code.
+![tibber printscreen](tibberSnapshot.png "tibber printscreen")
+
 
 ## How to run
 ```
