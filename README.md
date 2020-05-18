@@ -3,6 +3,21 @@ Fetch Tibber Pulse data from the Tibber Pulse API web socket and place it in you
 
 Based on oysteoh's [tibber-pypulse-ws](https://github.com/oysteoh/tibber-pypulse-ws).
 
+## Create Influxdb database
+
+### Run InfluxDB in Docker
+If you don't have a Influxdb server yet you can run one in Docker:
+```
+$ docker run -d -p 8086:8086 \
+      -v influxdb:/var/lib/influxdb \
+      influxdb
+```
+
+### Create Dabatase
+```
+$ curl -G http://<INFLUXDB_SERVER:8086/query --data-urlencode "q=CREATE DATABASE tibberPulse"
+```
+
 ## How to obtain Tibber Token and home ID
 ### Tibber Token
 - Go to https://developer.tibber.com/ and Sign in.
