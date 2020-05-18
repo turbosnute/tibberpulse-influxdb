@@ -29,7 +29,7 @@ $ curl -G http://<INFLUXDB_SERVER:8086/query --data-urlencode "q=CREATE DATABASE
 - Click "Load Personal Token"
 - From the dropdown to the right choose "Real time subscriptions"
 - You can now see your homeId in the GraphiQL code.
-![tibber printscreen](tibberSnapshot.png "tibber printscreen")
+![tibber printscreen](https://github.com/turbosnute/tibberpulse-influxdb/raw/master/tibberSnapshot.png "tibber printscreen")
 
 
 ## How to run
