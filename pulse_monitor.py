@@ -12,6 +12,7 @@ from influxdb import InfluxDBClient
 from dateutil.parser import parse
 
 # settings from EnvionmentValue
+tibberhomeid = None
 influxhost=os.getenv('INFLUXDB_HOST', "localhost")
 influxport=os.getenv('INFLUXDB_PORT', 8086)
 influxuser=os.getenv('INFLUXDB_USER', 'root')
