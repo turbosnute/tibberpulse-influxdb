@@ -21,6 +21,8 @@ influxdb=os.getenv('INFLUXDB_DATABASE', 'tibberPulse')
 tibbertoken=os.getenv('TIBBER_TOKEN', 'NOTOKEN')
 tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
 
+adr = "DEFAULT"
+
 client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
 header = {
@@ -63,6 +65,9 @@ def console_handler(ws, message):
         {
             "measurement": "pulse",
             "time": timestamp,
+            "tags": {
+                "address": adr
+            },
             "fields": {
                 "power": ifStringZero(power),
                 "consumption": ifStringZero(accumulated),
