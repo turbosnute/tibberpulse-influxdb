@@ -65,9 +65,6 @@ def console_handler(ws, message):
         {
             "measurement": "pulse",
             "time": timestamp,
-            "tags": {
-                "address": adr
-            },
             "fields": {
                 "power": ifStringZero(power),
                 "consumption": ifStringZero(accumulated),
