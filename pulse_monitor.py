@@ -22,7 +22,7 @@ tibbertoken=os.getenv('TIBBER_TOKEN', 'NOTOKEN')
 tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
 
 global adr
-ard = "DEFAULT"
+adr = "DEFAULT"
 
 client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
@@ -66,6 +66,9 @@ def console_handler(ws, message):
         {
             "measurement": "pulse",
             "time": timestamp,
+            "tags": {
+                "address": adr
+            },
             "fields": {
                 "power": ifStringZero(power),
                 "consumption": ifStringZero(accumulated),
