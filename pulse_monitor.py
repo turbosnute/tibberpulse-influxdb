@@ -10,6 +10,7 @@ import calendar
 import os
 from influxdb import InfluxDBClient
 from dateutil.parser import parse
+import requests
 
 # settings from EnvionmentValue
 influxhost=os.getenv('INFLUXDB_HOST', "localhost")
@@ -144,21 +145,18 @@ def run_query(query): # A simple function to use requests.post to make the API c
     else:
         raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
 
-def main():
-     if tibbertoken == 'NOTOKEN':
-        print("Tibber token is missing!")
-     else:
-        if tibberhomeid == 'NOID':
-            #Try to automaticly get homeid:
-            headers = {"Authorization": "Bearer "+tibbertoken}
-            query = "{ viewer { homes { address { address1 } id } } }"
-            resp = run_query(query)
-            id = resp['data']['viewer']['homes'][0]['id']
-            tibberhomeid = id
-            adr = resp['data']['viewer']['homes'][0]['address']['address1']
-            print("Using homeid '"+id+"' ("+adr+")")
 
-        initialize_websocket()
-    
-if __name__ == "__main__":
-    main()
+if tibbertoken == 'NOTOKEN':
+    print("Tibber token is missing!")
+else:
+    if tibberhomeid == 'NOID':
+        #Try to automaticly get homeid:
+        headers = {"Authorization": "Bearer "+tibbertoken}
+        query = "{ viewer { homes { address { address1 } id } } }"
+        resp = run_query(query)
+        id = resp['data']['viewer']['homes'][0]['id']
+        tibberhomeid = id
+        adr = resp['data']['viewer']['homes'][0]['address']['address1']
+        print("Using homeid '"+id+"' ("+adr+")")
+
+    initialize_websocket()
