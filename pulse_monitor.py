@@ -21,7 +21,8 @@ influxdb=os.getenv('INFLUXDB_DATABASE', 'tibberPulse')
 tibbertoken=os.getenv('TIBBER_TOKEN', 'NOTOKEN')
 tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
 
-adr = "DEFAULT"
+global adr
+ard = "DEFAULT"
 
 client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
