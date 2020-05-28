@@ -17,8 +17,8 @@ influxport=os.getenv('INFLUXDB_PORT', 8086)
 influxuser=os.getenv('INFLUXDB_USER', 'root')
 influxpw=os.getenv('INFLUXDB_PW', 'root')
 influxdb=os.getenv('INFLUXDB_DATABASE', 'tibberPulse')
-tibbertoken=os.getenv('TIBBER_TOKEN')
-tibberhomeid=os.getenv('TIBBER_HOMEID')
+tibbertoken=os.getenv('TIBBER_TOKEN', None)
+tibberhomeid=os.getenv('TIBBER_HOMEID', None)
 
 client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
@@ -147,16 +147,29 @@ def initialize_websocket():
     ws.on_open = on_open
     ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE, "check_hostname": False})
     
+def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+    request = requests.post('https://api.tibber.com/v1-beta/gql', json={'query': query}, headers=headers)
+    if request.status_code == 200:
+        return request.json()
+    else:
+        raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
 
 def main():
-    #parser = argparse.ArgumentParser(description='Start monitoring.')
-    config.init(tibbertoken, tibberhomeid)
+     if tibbertoken == None:
+        print("Tibber token is missing!")
+     else:
+        if tibberhomeid == None:
+            #Try to automaticly get homeid:
+            headers = {"Authorization": "Bearer "+tibbertoken}
+            query = "{ viewer { homes { address { address1 } id } } }"
+            resp = run_query(query)
+            id = resp['data']['viewer']['homes'][0]['id']
+            tibberhomeid = id
+            adr = resp['data']['viewer']['homes'][0]['address']['address1']
+            print("Using homeid '"+id+"' ("+adr+")")
 
-    #print("TOKEN: " + config.token)
-
-    initialize_websocket()
-
-
+        config.init(tibbertoken, tibberhomeid)
+        initialize_websocket()
     
 if __name__ == "__main__":
     main()
