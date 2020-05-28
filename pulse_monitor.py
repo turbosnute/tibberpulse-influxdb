@@ -12,14 +12,13 @@ from influxdb import InfluxDBClient
 from dateutil.parser import parse
 
 # settings from EnvionmentValue
-tibberhomeid = None
 influxhost=os.getenv('INFLUXDB_HOST', "localhost")
 influxport=os.getenv('INFLUXDB_PORT', 8086)
 influxuser=os.getenv('INFLUXDB_USER', 'root')
 influxpw=os.getenv('INFLUXDB_PW', 'root')
 influxdb=os.getenv('INFLUXDB_DATABASE', 'tibberPulse')
-tibbertoken=os.getenv('TIBBER_TOKEN', None)
-tibberhomeid=os.getenv('TIBBER_HOMEID', None)
+tibbertoken=os.getenv('TIBBER_TOKEN', 'NOTOKEN')
+tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
 
 client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
@@ -156,10 +155,10 @@ def run_query(query): # A simple function to use requests.post to make the API c
         raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
 
 def main():
-     if tibbertoken == None:
+     if tibbertoken == 'NOTOKEN':
         print("Tibber token is missing!")
      else:
-        if tibberhomeid == None:
+        if tibberhomeid == 'NOID':
             #Try to automaticly get homeid:
             headers = {"Authorization": "Bearer "+tibbertoken}
             query = "{ viewer { homes { address { address1 } id } } }"
