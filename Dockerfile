@@ -1,5 +1,5 @@
 # Pull base image
-FROM ubuntu:latest
+FROM ubuntu:22.04
 
 # Labels
 LABEL MAINTAINER="Øyvind Nilsen <oyvind.nilsen@gmail.com>"
