@@ -4,7 +4,7 @@ while :
 do
   date
   echo "--- Start Call API"
-  python3 pulse_monitor.py
+  python3 pulse.py
   RET=$?
   if [ ${RET} -ne 0 ];
   then

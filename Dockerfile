@@ -15,14 +15,14 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/* 
 
 # Run pip install
-RUN pip3 install influxdb websocket-client python-dateutil pyTibber requests
+RUN pip3 install influxdb websocket-client python-dateutil requests
 # Environment
 ENV PYTHONIOENCODING=utf-8
 ADD get.sh /
-ADD pulse_monitor.py /
+ADD pulse.py /
 
 # Chmod
 RUN chmod 755 /get.sh
-RUN chmod 755 /pulse_monitor.py
+RUN chmod 755 /pulse.py
 
 CMD ["/bin/bash","/get.sh"]

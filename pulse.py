@@ -8,6 +8,10 @@ import time
 import datetime
 import calendar
 import os
+import logging
+
+from gql import Client, gql
+from gql.transport.websockets import WebsocketsTransport
 from influxdb import InfluxDBClient
 from dateutil.parser import parse
 import requests
@@ -23,12 +27,27 @@ tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
 
 global adr
 adr = "DEFAULT"
+headers = {"Authorization": "Bearer "+tibbertoken}
 
-client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
+subscription_query = """
+subscription {{
+    liveMeasurement(homeId:"{home_id}"){{
+        timestamp
+        power
+        accumulatedConsumption
+        accumulatedCost
+        voltagePhase1
+        voltagePhase2
+        voltagePhase3
+        currentL1
+        currentL2
+        currentL3
+        lastMeterConsumption
+    }}
+}}
+""".format(home_id=tibberhomeid)
 
-header = {
-    'Sec-WebSocket-Protocol': 'graphql-subscriptions'
-}
+influx_client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
 def ifStringZero(val):
     val = str(val).strip()
@@ -38,10 +57,9 @@ def ifStringZero(val):
       res = None
     return res
 
-def console_handler(ws, message):
-    data = json.loads(message)
-    if 'payload' in data:
-        measurement = data['payload']['data']['liveMeasurement']
+def console_handler(data):
+    if 'liveMeasurement' in data:
+        measurement = data['liveMeasurement']
         timestamp = measurement['timestamp']
         timeObj = parse(timestamp)
         hourMultiplier = timeObj.hour+1
@@ -61,7 +79,7 @@ def console_handler(ws, message):
         currentL3 = measurement['currentL3']
         lastMeterConsumption = measurement['lastMeterConsumption']
         #print(accumulated)
-
+        
         output = [
         {
             "measurement": "pulse",
@@ -85,84 +103,51 @@ def console_handler(ws, message):
             }
         }
         ]
-
-        client.write_points(output)
-
         print(output)
+        influx_client.write_points(output)
+        
 
-def on_error(ws, error):
-    print(error)
-
-def on_close(ws):
-    print("### closed ###")
-
-def on_open(ws):
-    def run(*args):
-        init_data = {
-            'type':'init',
-            'payload':'token={token}'.format(token=tibbertoken)
-        }
-        init = json.dumps(init_data)
-        ws.send(init)
-
-        query = """
-        subscription {{
-            liveMeasurement(homeId:"{home_id}"){{
-                timestamp
-                power
-                accumulatedConsumption
-                accumulatedCost
-                voltagePhase1
-                voltagePhase2
-                voltagePhase3
-                currentL1
-                currentL2
-                currentL3
-                lastMeterConsumption
-            }}
-        }}
-        """.format(home_id=tibberhomeid)
-
-        subscribe_data = {
-            'query': query,
-            'type':'subscription_start',
-            'id': 0
-        }
-        subscribe = json.dumps(subscribe_data)
-        ws.send(subscribe)
-
-    _thread.start_new_thread(run, ())
-
-
-def initialize_websocket():
-    websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("wss://api.tibber.com/v1-beta/gql/subscriptions",
-                              header = header,
-                              on_message = console_handler,
-                              on_error = on_error,
-                              on_close = on_close)
-    ws.on_open = on_open
-    ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE, "check_hostname": False})
-    
-def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+def run_query(query, headers): # A simple function to use requests.post to make the API call. Note the json= section.
     request = requests.post('https://api.tibber.com/v1-beta/gql', json={'query': query}, headers=headers)
     if request.status_code == 200:
         return request.json()
     else:
         raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
 
+def fetch_data(url, subscription_query, headers):
+    transport = WebsocketsTransport(
+        url=url,
+        headers=headers,
+        ping_interval=60,
+        pong_timeout=10
+    )
+    # Using `async with` on the client will start a connection on the transport
+    # and provide a `session` variable to execute queries on this connection
+    ws_client = Client(
+        transport=transport,
+        fetch_schema_from_transport=True
+    )
+
+    for result in ws_client.subscribe(gql(subscription_query)):
+        #print (result)
+        console_handler(result)
 
 if tibbertoken == 'NOTOKEN':
     print("Tibber token is missing!")
 else:
     if tibberhomeid == 'NOID':
         #Try to automaticly get homeid:
-        headers = {"Authorization": "Bearer "+tibbertoken}
         query = "{ viewer { homes { address { address1 } id } } }"
-        resp = run_query(query)
+        resp = run_query(query, headers)
         id = resp['data']['viewer']['homes'][0]['id']
         tibberhomeid = id
         adr = resp['data']['viewer']['homes'][0]['address']['address1']
         print("Using homeid '"+id+"' ("+adr+")")
+    # Get subscription URI
+    request_res = run_query("{viewer{websocketSubscriptionUrl}}", headers)
+    ws_uri = request_res['data']['viewer']['websocketSubscriptionUrl']
 
-    initialize_websocket()
+    print("Sleep for 5 secs.")
+    time.sleep(5)
+    print("Run GQL query.")
+    fetch_data(ws_uri, subscription_query, headers)
