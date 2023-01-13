@@ -36,6 +36,10 @@ docker run -d \
 turbosnute/tibberpulse-influxdb-rpi:latest
 ```
 
+## Common Issues
+### Too many open connections on this server: 2;
+The quickest way to fix the "Too many open connections on this server" issue is just to generate a new Tibber Access Token and start the container again (remember to set the new token in the TIBBER_TOKEN variable).
+
 ## Advanced Options
 
 ### Specify homeID
