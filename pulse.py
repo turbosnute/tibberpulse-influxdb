@@ -29,23 +29,7 @@ global adr
 adr = "DEFAULT"
 headers = {"Authorization": "Bearer "+tibbertoken}
 
-subscription_query = """
-subscription {{
-    liveMeasurement(homeId:"{home_id}"){{
-        timestamp
-        power
-        accumulatedConsumption
-        accumulatedCost
-        voltagePhase1
-        voltagePhase2
-        voltagePhase3
-        currentL1
-        currentL2
-        currentL3
-        lastMeterConsumption
-    }}
-}}
-""".format(home_id=tibberhomeid)
+subscription_query = ""
 
 influx_client = InfluxDBClient(influxhost, influxport, influxuser, influxpw, influxdb)
 
@@ -143,6 +127,24 @@ else:
         tibberhomeid = id
         adr = resp['data']['viewer']['homes'][0]['address']['address1']
         print("Using homeid '"+id+"' ("+adr+")")
+
+    subscription_query = """
+    subscription {{
+        liveMeasurement(homeId:"{home_id}"){{
+            timestamp
+            power
+            accumulatedConsumption
+            accumulatedCost
+            voltagePhase1
+            voltagePhase2
+            voltagePhase3
+            currentL1
+            currentL2
+            currentL3
+            lastMeterConsumption
+        }}
+    }}
+    """.format(home_id=tibberhomeid)
     # Get subscription URI
     request_res = run_query("{viewer{websocketSubscriptionUrl}}", headers)
     ws_uri = request_res['data']['viewer']['websocketSubscriptionUrl']
