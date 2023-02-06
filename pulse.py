@@ -101,9 +101,7 @@ def run_query(query, headers): # A simple function to use requests.post to make 
 def fetch_data(url, subscription_query, headers):
     transport = WebsocketsTransport(
         url=url,
-        headers=headers,
-        ping_interval=60,
-        pong_timeout=10
+        headers=headers
     )
     # Using `async with` on the client will start a connection on the transport
     # and provide a `session` variable to execute queries on this connection
