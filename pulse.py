@@ -23,7 +23,7 @@ def str_to_bool(v: str) -> bool:
     return v.lower() in ("yes", "true", "t", "1")
 
 
-print("tibberpulse-influxdb :-)")
+print("tibberpulse-influxdb")
 
 # settings from EnvionmentValue
 influxhost=os.getenv('INFLUXDB_HOST', "localhost")

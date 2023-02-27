@@ -1,7 +1,5 @@
-# tibberpulse-influxdb-rpi
+# tibberpulse-influxdb
 Fetch Tibber Pulse data from the Tibber Pulse API web socket and place it in your influxdb.
-
-Based on oysteoh's [tibber-pypulse-ws](https://github.com/oysteoh/tibber-pypulse-ws).
 
 ## Create Influxdb database
 
