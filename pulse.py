@@ -9,12 +9,21 @@ import datetime
 import calendar
 import os
 import logging
+#import asyncio
 
 from gql import Client, gql
 from gql.transport.websockets import WebsocketsTransport
+
 from influxdb import InfluxDBClient
 from dateutil.parser import parse
 import requests
+
+def str_to_bool(v: str) -> bool:
+    """Interpret string as bool"""
+    return v.lower() in ("yes", "true", "t", "1")
+
+
+print("tibberpulse-influxdb :-)")
 
 # settings from EnvionmentValue
 influxhost=os.getenv('INFLUXDB_HOST', "localhost")
@@ -24,6 +33,7 @@ influxpw=os.getenv('INFLUXDB_PW', 'root')
 influxdb=os.getenv('INFLUXDB_DATABASE', 'tibberPulse')
 tibbertoken=os.getenv('TIBBER_TOKEN', 'NOTOKEN')
 tibberhomeid=os.getenv('TIBBER_HOMEID', 'NOID')
+verbose = str_to_bool(os.getenv("VERBOSE", "False"))
 
 global adr
 adr = "DEFAULT"
@@ -87,9 +97,11 @@ def console_handler(data):
             }
         }
         ]
-        print(output)
+        if verbose:
+           print(output)
         influx_client.write_points(output)
-        
+    else:
+        print(data)
 
 def run_query(query, headers): # A simple function to use requests.post to make the API call. Note the json= section.
     request = requests.post('https://api.tibber.com/v1-beta/gql', json={'query': query}, headers=headers)
@@ -102,19 +114,32 @@ def fetch_data(url, subscription_query, headers):
     transport = WebsocketsTransport(
         url=url,
         headers=headers,
-        ping_interval=60,
-        pong_timeout=10
+        keep_alive_timeout=120
     )
-    # Using `async with` on the client will start a connection on the transport
-    # and provide a `session` variable to execute queries on this connection
+
     ws_client = Client(
         transport=transport,
         fetch_schema_from_transport=True
     )
 
-    for result in ws_client.subscribe(gql(subscription_query)):
-        #print (result)
-        console_handler(result)
+    subscription = gql(subscription_query)
+
+    try:
+       for result in ws_client.subscribe(subscription):
+          console_handler(result)
+    except Exception as ex:
+       module = ex.__class__.__module__
+       print("En feil oppstod")
+       print(module + ex.__class__.__name__)
+
+       #template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+       #message = template.format(type(ex).__name__, ex.args)
+       exargs = str(ex.args)
+       if exargs.find("Too many open connections") != -1:
+          print("Too many open connections. Sleeping 10 minutes...")
+          time.sleep(6000)
+       #print(message)
+       #ConnectionClosedError
 
 if tibbertoken == 'NOTOKEN':
     print("Tibber token is missing!")
