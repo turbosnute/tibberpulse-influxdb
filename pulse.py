@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import sys
 import websocket
@@ -19,9 +20,8 @@ from dateutil.parser import parse
 import requests
 
 def str_to_bool(v: str) -> bool:
-    """Interpret string as bool"""
+    # Interpret string as bool
     return v.lower() in ("yes", "true", "t", "1")
-
 
 print("tibberpulse-influxdb")
 
@@ -73,7 +73,6 @@ def console_handler(data):
         currentL3 = measurement['currentL3']
         lastMeterConsumption = measurement['lastMeterConsumption']
         #print(accumulated)
-        
         output = [
         {
             "measurement": "pulse",
@@ -129,18 +128,12 @@ def fetch_data(url, subscription_query, headers):
           console_handler(result)
     except Exception as ex:
        module = ex.__class__.__module__
-       print("En feil oppstod")
-       print(module + ex.__class__.__name__)
-
-       #template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-       #message = template.format(type(ex).__name__, ex.args)
+       #print(module + ex.__class__.__name__)
        exargs = str(ex.args)
        if exargs.find("Too many open connections") != -1:
           print("Too many open connections. Sleeping 10 minutes...")
+          print("If you continue to see this error you can fix it by recreating the tibber token")
           time.sleep(6000)
-       #print(message)
-       #ConnectionClosedError
-
 if tibbertoken == 'NOTOKEN':
     print("Tibber token is missing!")
 else:
