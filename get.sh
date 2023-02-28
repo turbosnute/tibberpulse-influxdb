@@ -3,15 +3,9 @@
 while :
 do
   date
-  echo "--- Start Call API"
-  python3 pulse.py
-  RET=$?
-  if [ ${RET} -ne 0 ];
-  then
-    echo "Exit status not 0"
-    echo "Sleep 120"
-    sleep 120
-  fi
+  echo "--- Starting Python script..."
+  /bin/python3 -u pulse.py
+  echo "---"
   date
   echo "Sleep 60"
   sleep 60
