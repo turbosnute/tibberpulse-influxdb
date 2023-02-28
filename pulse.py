@@ -132,6 +132,7 @@ def fetch_data(url, subscription_query, headers):
        exargs = str(ex.args)
        if exargs.find("Too many open connections") != -1:
           print("Too many open connections. Sleeping 10 minutes...")
+          print("If you continue to see this error you can fix it by recreating the tibber token")
           time.sleep(6000)
 if tibbertoken == 'NOTOKEN':
     print("Tibber token is missing!")
